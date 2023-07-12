@@ -39,7 +39,12 @@ func main() {
 		c.JSON(http.StatusOK, podList)
 	})
 
-	router.Run(":8080")
+	router.GET("/health", func(c *gin.Context) {
+
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "operation-platform is running"})
+	})
+
+	router.Run(":58180")
 }
 
 func getPodsByDeployment(clientset *kubernetes.Clientset, namespace, deployment string) (map[string]interface{}, error) {
