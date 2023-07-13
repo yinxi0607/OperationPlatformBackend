@@ -1,21 +1,43 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"operation-platform/routers"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func main() {
-	// 在Kubernetes集群内部部署时，使用以下代码创建一个in-cluster配置
-
-	// 设置Gin路由
 	router := gin.Default()
 	routers.InitRouters(router)
+	// Initialize your routes here.
 
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "operation-platform is running"})
-	})
+	srv := &http.Server{
+		Addr:    ":58180",
+		Handler: router,
+	}
 
-	router.Run(":58180")
+	// Start serving in a goroutine.
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			panic(fmt.Sprintf("listen and serve: %s", err))
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shut down the server.
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	// Shutdown the server with a timeout.
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		panic(fmt.Sprintf("server shutdown: %s", err))
+	}
 }

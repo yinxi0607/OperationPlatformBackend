@@ -5,6 +5,8 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+// 在Kubernetes集群内部部署时，使用以下代码创建一个in-cluster配置
+
 var (
 	ClientSet *kubernetes.Clientset
 	Config    *rest.Config
