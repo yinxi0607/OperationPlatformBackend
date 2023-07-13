@@ -6,8 +6,8 @@ import (
 
 func InitRouters(router *gin.Engine) {
 	InitDeploymentRouter(router)
-	//initNamespaceRouter()
-	//initPodRouter()
+	InitNamespacesRouter(router)
+	InitPodsRouter(router)
 	//initNodeRouter()
 	//initIngressRouter()
 }

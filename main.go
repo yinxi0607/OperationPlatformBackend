@@ -14,7 +14,6 @@ func main() {
 	routers.InitRouters(router)
 
 	router.GET("/health", func(c *gin.Context) {
-
 		c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "operation-platform is running"})
 	})
 

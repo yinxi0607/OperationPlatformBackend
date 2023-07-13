@@ -6,9 +6,9 @@ import (
 )
 
 func InitDeploymentRouter(router *gin.Engine) {
-	deploymentServices := services.NewDefault()
-
-	router.GET("/pods/:namespace/:deployment", func(c *gin.Context) {
+	deploymentServices := services.NewDeploymentService()
+	deploymentRouter := router.Group("/deployments")
+	deploymentRouter.GET("/:namespace/:deployment", func(c *gin.Context) {
 		deploymentServices.GetDeploymentPods(c)
 	})
 }

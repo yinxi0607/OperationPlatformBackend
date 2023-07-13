@@ -11,7 +11,7 @@ import (
 func init() {
 }
 
-func NewDefault() *DeploymentService {
+func NewDeploymentService() *DeploymentService {
 	return &DeploymentService{}
 }
 
@@ -23,7 +23,7 @@ func (s *DeploymentService) GetDeploymentPods(c *gin.Context) {
 	namespace := c.Param("namespace")
 	deployment := c.Param("deployment")
 
-	podList, err := s.getPodsByDeployment(namespace, deployment)
+	podList, err := s.getPodsDetailByDeployment(namespace, deployment)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -33,7 +33,7 @@ func (s *DeploymentService) GetDeploymentPods(c *gin.Context) {
 
 }
 
-func (s *DeploymentService) getPodsByDeployment(namespace, deployment string) (map[string]interface{}, error) {
+func (s *DeploymentService) getPodsDetailByDeployment(namespace, deployment string) (map[string]interface{}, error) {
 	deploy, err := ClientSet.AppsV1().Deployments(namespace).Get(context.TODO(), deployment, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get deployment: %v", err)
