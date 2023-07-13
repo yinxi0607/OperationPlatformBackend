@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
+	"operation-platform/utils"
 )
 
 func init() {
@@ -23,10 +24,18 @@ func (s *PodsService) GetPodInfo(c *gin.Context) {
 	namespace := c.Param("namespace")
 	podInfo, err := s.getPodInfo(namespace, podName)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, utils.Response{
+			Code:    utils.InternalErrorCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
 		return
 	}
-	c.JSON(http.StatusOK, podInfo)
+	c.JSON(http.StatusOK, utils.Response{
+		Code:    utils.SuccessCode,
+		Message: utils.SuccessMessage,
+		Data:    podInfo,
+	})
 
 }
 
@@ -43,10 +52,18 @@ func (s *PodsService) GetAllPods(c *gin.Context) {
 	namespace := c.Param("namespace")
 	podList, err := s.getAllPods(namespace)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, utils.Response{
+			Code:    utils.InternalErrorCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
 		return
 	}
-	c.JSON(http.StatusOK, podList)
+	c.JSON(http.StatusOK, utils.Response{
+		Code:    utils.SuccessCode,
+		Message: utils.SuccessMessage,
+		Data:    podList,
+	})
 }
 
 func (s *PodsService) getAllPods(namespace string) ([]string, error) {

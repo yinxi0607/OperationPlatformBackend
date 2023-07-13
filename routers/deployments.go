@@ -2,13 +2,12 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"operation-platform/services"
+	"operation-platform/handlers"
 )
 
 func InitDeploymentRouter(router *gin.Engine) {
-	deploymentServices := services.NewDeploymentService()
 	deploymentRouter := router.Group("/deployments")
-	deploymentRouter.GET("/:namespace/:deployment", func(c *gin.Context) {
-		deploymentServices.GetDeploymentPods(c)
-	})
+	deploymentRouter.GET("/:namespace", handlers.GetAllDeployment)
+	deploymentRouter.GET("/:namespace/:deployment", handlers.GetDeploymentPods)
+
 }

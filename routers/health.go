@@ -8,9 +8,10 @@ import (
 func InitHealthRouter(router *gin.Engine) {
 
 	router.GET("/health", func(c *gin.Context) {
+
 		c.JSON(200, utils.Response{
-			Code:    0,
-			Message: "success",
+			Code:    utils.SuccessCode,
+			Message: utils.SuccessMessage,
 			Data:    "operation-platform is running",
 		})
 	})
