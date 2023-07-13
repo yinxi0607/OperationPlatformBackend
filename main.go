@@ -14,6 +14,7 @@ import (
 
 func main() {
 	router := gin.Default()
+
 	routers.InitRouters(router)
 	// Initialize your routes here.
 
