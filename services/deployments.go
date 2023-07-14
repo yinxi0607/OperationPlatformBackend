@@ -179,7 +179,7 @@ func (s *DeploymentService) PostDeployment(c *gin.Context) {
 }
 
 func (s *DeploymentService) postDeployment(deploymentInfo *DeploymentInfo) (interface{}, error) {
-	deployment1 := &appsv1.Deployment{
+	deploymentCreate := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deploymentInfo.Name,
 			Namespace: deploymentInfo.Namespace,
@@ -240,7 +240,7 @@ func (s *DeploymentService) postDeployment(deploymentInfo *DeploymentInfo) (inte
 		},
 	}
 	deploymentsClient := ClientSet.AppsV1().Deployments(deploymentInfo.Namespace)
-	result, err := deploymentsClient.Create(context.Background(), deployment1, metav1.CreateOptions{})
+	result, err := deploymentsClient.Create(context.Background(), deploymentCreate, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
