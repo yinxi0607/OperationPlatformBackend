@@ -10,7 +10,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"operation-platform/utils"
-	"strconv"
 )
 
 type DeploymentInfo struct {
@@ -113,52 +112,24 @@ func (s *DeploymentService) getAllDeployment(namespace string) ([]string, error)
 }
 
 func (s *DeploymentService) PostDeployment(c *gin.Context) {
-	namespace := c.Param("namespace")
-	name := c.Param("name")
-	image := c.Param("image")
-	deploymentInfo := &DeploymentInfo{
-		Name:      name,
-		Namespace: namespace,
-		Image:     image,
-	}
-	port := c.Param("port")
-	portInt, err2 := strconv.ParseInt(port, 10, 32)
-	if err2 != nil {
+	//namespace := c.Param("namespace")
+	//name := c.Param("name")
+	//image := c.Param("image")
+
+	//deploymentInfo := &DeploymentInfo{
+	//	Name:      name,
+	//	Namespace: namespace,
+	//	Image:     image,
+	//}
+	deploymentInfo := &DeploymentInfo{}
+	err := c.BindJSON(deploymentInfo)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.Response{
 			Code:    utils.InternalErrorCode,
-			Message: err2.Error(),
+			Message: err.Error(),
 			Data:    nil,
 		})
 		return
-	} else {
-		deploymentInfo.Port = int32(portInt)
-	}
-	replicas := c.Param("replicas")
-	if replicas != "" {
-		replicasInt, err2 := strconv.ParseInt(replicas, 10, 32)
-		if err2 == nil {
-			deploymentInfo.Replicas = int32(replicasInt)
-		}
-	}
-	limitResourceMemory := c.Param("limitResourceMemory")
-	if limitResourceMemory != "" {
-		deploymentInfo.LimitResourceMemory = limitResourceMemory
-	}
-	limitResourceCPU := c.Param("limitResourceCPU")
-	if limitResourceCPU != "" {
-		deploymentInfo.LimitResourceCPU = limitResourceCPU
-	}
-	requestsResourceMemory := c.Param("requestsResourceMemory")
-	if requestsResourceMemory != "" {
-		deploymentInfo.RequestsResourceMemory = requestsResourceMemory
-	}
-	requestsResourceCPU := c.Param("requestsResourceCPU")
-	if requestsResourceCPU != "" {
-		deploymentInfo.RequestsResourceCPU = requestsResourceCPU
-	}
-	imagePullSecrets := c.Param("imagePullSecrets")
-	if imagePullSecrets != "" {
-		deploymentInfo.ImagePullSecrets = imagePullSecrets
 	}
 
 	result, err := s.postDeployment(deploymentInfo)
