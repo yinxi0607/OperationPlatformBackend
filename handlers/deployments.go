@@ -22,3 +22,11 @@ func GetDeploymentPods(c *gin.Context) {
 func PostDeployment(c *gin.Context) {
 	deploymentServices.PostDeployment(c)
 }
+
+func PutDeployment(c *gin.Context) {
+	deploymentServices.PutDeployment(c)
+}
+
+func DeleteDeployment(c *gin.Context) {
+	deploymentServices.DeleteDeployment(c)
+}
