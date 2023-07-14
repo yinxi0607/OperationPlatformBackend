@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -23,6 +24,17 @@ type DeploymentInfo struct {
 	RequestsResourceMemory string `json:"requestsResourceMemory" default:"256Mi"`
 	RequestsResourceCPU    string `json:"requestsResourceCPU" default:"100m"`
 	ImagePullSecrets       string `json:"imagePullSecrets" default:"aliyun-registry"`
+}
+
+func NewDeploymentInfo() *DeploymentInfo {
+	return &DeploymentInfo{
+		Replicas:               1,
+		LimitResourceMemory:    "1Gi",
+		LimitResourceCPU:       "1000m",
+		RequestsResourceMemory: "256Mi",
+		RequestsResourceCPU:    "100m",
+		ImagePullSecrets:       "aliyun-registry",
+	}
 }
 
 func NewDeploymentService() *DeploymentService {
@@ -121,8 +133,9 @@ func (s *DeploymentService) PostDeployment(c *gin.Context) {
 	//	Namespace: namespace,
 	//	Image:     image,
 	//}
-	deploymentInfo := &DeploymentInfo{}
+	deploymentInfo := NewDeploymentInfo()
 	err := c.BindJSON(deploymentInfo)
+	logrus.Infof("deploymentInfo: %v", deploymentInfo)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.Response{
 			Code:    utils.InternalErrorCode,
@@ -150,6 +163,7 @@ func (s *DeploymentService) PostDeployment(c *gin.Context) {
 }
 
 func (s *DeploymentService) postDeployment(deploymentInfo *DeploymentInfo) (interface{}, error) {
+
 	deploymentCreate := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deploymentInfo.Name,

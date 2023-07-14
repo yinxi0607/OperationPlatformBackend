@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"operation-platform/routers"
 	"os"
@@ -11,6 +12,10 @@ import (
 	"syscall"
 	"time"
 )
+
+func init() {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+}
 
 func main() {
 	router := gin.Default()
