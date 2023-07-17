@@ -3,6 +3,7 @@ package utils
 import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"os"
+	"time"
 )
 
 func Int32Ptr(i int32) *int32 { return &i }
@@ -18,4 +19,8 @@ func GetEvnValue(key, defaultValue string) string {
 		return defaultValue
 	}
 	return value
+}
+
+func GetNowTimestamp() int64 {
+	return time.Now().Unix()
 }

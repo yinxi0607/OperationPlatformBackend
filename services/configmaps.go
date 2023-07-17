@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"net/http"
 	"operation-platform/utils"
 	"os"
+	"sigs.k8s.io/yaml"
 	"strings"
 )
 
@@ -275,13 +277,24 @@ func (s *ConfigmapService) deleteConfigmap(configmapInfo *ConfigmapInfo) (interf
 		os.Exit(1)
 	}
 
-	// 将ConfigMap转换为YAML
-	yamlData, err := yaml.Marshal(configMap)
+	// 将 ConfigMap 转换为 YAML
+	scheme := runtime.NewScheme()
+	serializerInstance := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{Yaml: true})
+	var jsonData []byte
+	jsonData, err = runtime.Encode(serializerInstance, configMap)
 	if err != nil {
-		logrus.Error("yaml.Marshal Deployment error: ", err)
+		logrus.Error("Error encoding ConfigMap to JSON: %v\n", err)
 		return nil, err
 	}
-	err = utils.AzureStorage(fmt.Sprintf("%s/%s", configmapInfo.Namespace, configmapInfo.Name), yamlData)
+
+	// 将 JSON 转换为 YAML
+	var yamlData []byte
+	yamlData, err = yaml.JSONToYAML(jsonData)
+	if err != nil {
+		logrus.Error("Error converting JSON to YAML: %v\n", err)
+		return nil, err
+	}
+	err = utils.AzureStorage(fmt.Sprintf("%s/%s/%s", configmapInfo.Namespace, "configmaps", configmapInfo.Name), yamlData)
 	if err != nil {
 		logrus.Error("configmap AzureStorage error: ", err)
 		return nil, err

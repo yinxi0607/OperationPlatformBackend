@@ -36,7 +36,7 @@ func init() {
 func AzureStorage(blobName string, data []byte) error {
 
 	// 创建一个blob URL
-	blobURL := azureBlobContainerURL.NewBlockBlobURL(blobName)
+	blobURL := azureBlobContainerURL.NewBlockBlobURL(fmt.Sprintf("%s_%d.yaml", blobName, GetNowTimestamp()))
 	reader := bytes.NewReader(data)
 
 	// 设置上传选项
