@@ -283,10 +283,10 @@ func (s *ConfigmapService) deleteConfigmap(configmapInfo *ConfigmapInfo) (interf
 	// 设置 ConfigMap 的 TypeMeta
 	configMap.APIVersion = gvk.GroupVersion().String()
 	configMap.Kind = gvk.Kind
-
+	logrus.Infof("configmap: %v", configMap)
 	// 将 ConfigMap 转换为 JSON
 	scheme := runtime.NewScheme()
-	serializer := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{Yaml: true})
+	serializer := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{Yaml: false})
 	var jsonData []byte
 	jsonData, err = runtime.Encode(serializer, configMap)
 	if err != nil {
