@@ -7,8 +7,6 @@ import (
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"net/http"
 	"operation-platform/utils"
 	"os"
@@ -277,31 +275,38 @@ func (s *ConfigmapService) deleteConfigmap(configmapInfo *ConfigmapInfo) (interf
 		os.Exit(1)
 	}
 
-	// 获取 ConfigMap 的 GroupVersionKind
-	gvk := configMap.GroupVersionKind()
+	//// 获取 ConfigMap 的 GroupVersionKind
+	//gvk := configMap.GroupVersionKind()
+	//
+	//// 设置 ConfigMap 的 TypeMeta
+	//configMap.APIVersion = gvk.GroupVersion().String()
+	//configMap.Kind = gvk.Kind
+	//logrus.Infof("configmap: %v", configMap)
+	//// 将 ConfigMap 转换为 JSON
+	//scheme := runtime.NewScheme()
+	//serializer := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{Yaml: false})
+	//var jsonData []byte
+	//jsonData, err = runtime.Encode(serializer, configMap)
+	//if err != nil {
+	//	logrus.Errorf("Error encoding ConfigMap to JSON: %v\n", err)
+	//	return nil, err
+	//}
+	//logrus.Infof("jsonData: %v", string(jsonData))
+	//// 将 JSON 转换为 YAML
+	//var yamlData []byte
+	//yamlData, err = yaml.JSONToYAML(jsonData)
+	//if err != nil {
+	//	logrus.Errorf("Error converting JSON to YAML: %v\n", err)
+	//	return nil, err
+	//}
 
-	// 设置 ConfigMap 的 TypeMeta
-	configMap.APIVersion = gvk.GroupVersion().String()
-	configMap.Kind = gvk.Kind
-	logrus.Infof("configmap: %v", configMap)
-	// 将 ConfigMap 转换为 JSON
-	scheme := runtime.NewScheme()
-	serializer := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{Yaml: false})
-	var jsonData []byte
-	jsonData, err = runtime.Encode(serializer, configMap)
-	if err != nil {
-		logrus.Errorf("Error encoding ConfigMap to JSON: %v\n", err)
-		return nil, err
-	}
-	logrus.Infof("jsonData: %v", string(jsonData))
-	// 将 JSON 转换为 YAML
-	var yamlData []byte
-	yamlData, err = yaml.JSONToYAML(jsonData)
+	// 将 ConfigMap 转换为 YAML
+	yamlData, err := yaml.Marshal(configMap)
 	if err != nil {
 		logrus.Errorf("Error converting JSON to YAML: %v\n", err)
 		return nil, err
 	}
-
+	logrus.Infof("yamlData: %v", string(yamlData))
 	err = utils.AzureStorage(fmt.Sprintf("%s/%s/%s", configmapInfo.Namespace, "configmaps", configmapInfo.Name), yamlData)
 	if err != nil {
 		logrus.Error("configmap AzureStorage error: ", err)
