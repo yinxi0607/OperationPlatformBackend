@@ -277,13 +277,20 @@ func (s *ConfigmapService) deleteConfigmap(configmapInfo *ConfigmapInfo) (interf
 		os.Exit(1)
 	}
 
-	// 将 ConfigMap 转换为 YAML
+	// 获取 ConfigMap 的 GroupVersionKind
+	gvk := configMap.GroupVersionKind()
+
+	// 设置 ConfigMap 的 TypeMeta
+	configMap.APIVersion = gvk.GroupVersion().String()
+	configMap.Kind = gvk.Kind
+
+	// 将 ConfigMap 转换为 JSON
 	scheme := runtime.NewScheme()
-	serializerInstance := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{Yaml: true})
+	serializer := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{Yaml: true})
 	var jsonData []byte
-	jsonData, err = runtime.Encode(serializerInstance, configMap)
+	jsonData, err = runtime.Encode(serializer, configMap)
 	if err != nil {
-		logrus.Error("Error encoding ConfigMap to JSON: %v\n", err)
+		logrus.Errorf("Error encoding ConfigMap to JSON: %v\n", err)
 		return nil, err
 	}
 
@@ -291,9 +298,10 @@ func (s *ConfigmapService) deleteConfigmap(configmapInfo *ConfigmapInfo) (interf
 	var yamlData []byte
 	yamlData, err = yaml.JSONToYAML(jsonData)
 	if err != nil {
-		logrus.Error("Error converting JSON to YAML: %v\n", err)
+		logrus.Errorf("Error converting JSON to YAML: %v\n", err)
 		return nil, err
 	}
+
 	err = utils.AzureStorage(fmt.Sprintf("%s/%s/%s", configmapInfo.Namespace, "configmaps", configmapInfo.Name), yamlData)
 	if err != nil {
 		logrus.Error("configmap AzureStorage error: ", err)
