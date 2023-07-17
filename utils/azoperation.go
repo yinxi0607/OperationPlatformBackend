@@ -18,7 +18,7 @@ func init() {
 	accountName := GetEvnValue("AZURE_STORAGE_ACCOUNT", "your_account_name")
 	accountKey := GetEvnValue("AZURE_STORAGE_ACCESS_KEY", "your_account_key")
 	containerName := GetEvnValue("AZURE_STORAGE_CONTAINER", "your_container_name")
-
+	logrus.Infof("accountName: %s, accountKey: %s, containerName: %s", accountName, accountKey, containerName)
 	credential, err := azblob.NewSharedKeyCredential(accountName, accountKey)
 	if err != nil {
 		panic(err)
