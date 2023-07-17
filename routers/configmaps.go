@@ -11,4 +11,5 @@ func InitConfigmapRouter(router *gin.Engine) {
 	configmapRouter.POST("/", handlers.PostConfigmap)
 	configmapRouter.PUT("/", handlers.PutConfigmap)
 	configmapRouter.DELETE("/", handlers.DeleteConfigmap)
+	configmapRouter.GET("/:namespace/:configmapName", handlers.GetConfigmap)
 }

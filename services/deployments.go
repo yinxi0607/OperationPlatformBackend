@@ -48,7 +48,14 @@ func (s *DeploymentService) GetDeploymentPods(c *gin.Context) {
 
 	namespace := c.Param("namespace")
 	deployment := c.Param("deployment")
-
+	if namespace == "" || deployment == "" {
+		c.JSON(http.StatusBadRequest, utils.Response{
+			Code:    utils.ParamsErrorCode,
+			Message: "namespace or deployment is empty",
+			Data:    nil,
+		})
+		return
+	}
 	podList, err := s.getPodsDetailByDeployment(namespace, deployment)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.Response{
@@ -93,6 +100,14 @@ func (s *DeploymentService) getPodsDetailByDeployment(namespace, deployment stri
 
 func (s *DeploymentService) GetAllDeployment(c *gin.Context) {
 	namespace := c.Param("namespace")
+	if namespace == "" {
+		c.JSON(http.StatusBadRequest, utils.Response{
+			Code:    utils.ParamsErrorCode,
+			Message: "namespace is empty",
+			Data:    nil,
+		})
+		return
+	}
 	deploymentList, err := s.getAllDeployment(namespace)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.Response{
@@ -140,6 +155,14 @@ func (s *DeploymentService) PostDeployment(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, utils.Response{
 			Code:    utils.InternalErrorCode,
 			Message: err.Error(),
+			Data:    nil,
+		})
+		return
+	}
+	if deploymentInfo.Name == "" || deploymentInfo.Namespace == "" || deploymentInfo.Image == "" {
+		c.JSON(http.StatusBadRequest, utils.Response{
+			Code:    utils.ParamsErrorCode,
+			Message: "namespace or name or image is empty",
 			Data:    nil,
 		})
 		return
@@ -244,6 +267,14 @@ func (s *DeploymentService) PutDeployment(c *gin.Context) {
 		})
 		return
 	}
+	if deploymentInfo.Name == "" || deploymentInfo.Namespace == "" || deploymentInfo.Image == "" {
+		c.JSON(http.StatusBadRequest, utils.Response{
+			Code:    utils.ParamsErrorCode,
+			Message: "namespace or name or image is empty",
+			Data:    nil,
+		})
+		return
+	}
 	result, err := s.putDeployment(deploymentInfo)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.Response{
@@ -295,6 +326,14 @@ func (s *DeploymentService) DeleteDeployment(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, utils.Response{
 			Code:    utils.InternalErrorCode,
 			Message: err.Error(),
+			Data:    nil,
+		})
+		return
+	}
+	if deploymentInfo.Name == "" || deploymentInfo.Namespace == "" {
+		c.JSON(http.StatusBadRequest, utils.Response{
+			Code:    utils.ParamsErrorCode,
+			Message: "namespace or name is empty",
 			Data:    nil,
 		})
 		return
