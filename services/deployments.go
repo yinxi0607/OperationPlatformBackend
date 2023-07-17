@@ -264,6 +264,7 @@ func (s *DeploymentService) PutDeployment(c *gin.Context) {
 func (s *DeploymentService) putDeployment(deploymentInfo *DeploymentInfo) (interface{}, error) {
 	deploymentsClient := ClientSet.AppsV1().Deployments(deploymentInfo.Namespace)
 	existingDeployment, err := deploymentsClient.Get(context.Background(), deploymentInfo.Name, metav1.GetOptions{})
+	logrus.Infof("existingDeployment: %v", existingDeployment)
 	if err != nil {
 		return nil, err
 	}
@@ -279,6 +280,7 @@ func (s *DeploymentService) putDeployment(deploymentInfo *DeploymentInfo) (inter
 	}
 
 	result, err := deploymentsClient.Update(context.Background(), existingDeployment, metav1.UpdateOptions{})
+	logrus.Infof("result: %v", result)
 	if err != nil {
 		return nil, err
 	}
