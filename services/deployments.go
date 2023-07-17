@@ -244,7 +244,7 @@ func (s *DeploymentService) PutDeployment(c *gin.Context) {
 		})
 		return
 	}
-	result, err := s.postDeployment(deploymentInfo)
+	result, err := s.putDeployment(deploymentInfo)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.Response{
 			Code:    utils.InternalErrorCode,
