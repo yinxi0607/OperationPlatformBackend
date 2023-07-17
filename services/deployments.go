@@ -262,69 +262,23 @@ func (s *DeploymentService) PutDeployment(c *gin.Context) {
 }
 
 func (s *DeploymentService) putDeployment(deploymentInfo *DeploymentInfo) (interface{}, error) {
-
-	deploymentCreate := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentInfo.Name,
-			Namespace: deploymentInfo.Namespace,
-			Labels: map[string]string{
-				"app": deploymentInfo.Name,
-			},
-		},
-		Spec: appsv1.DeploymentSpec{
-			Replicas: utils.Int32Ptr(deploymentInfo.Replicas),
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{"app": deploymentInfo.Name},
-			},
-			Strategy: appsv1.DeploymentStrategy{
-				Type: "RollingUpdate",
-				RollingUpdate: &appsv1.RollingUpdateDeployment{
-					MaxSurge:       utils.IntOrStringPtr(1),
-					MaxUnavailable: utils.IntOrStringPtr(0),
-				},
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"app":     deploymentInfo.Name,
-						"logging": "true",
-					},
-				},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:            deploymentInfo.Name,
-							Image:           deploymentInfo.Image,
-							ImagePullPolicy: corev1.PullAlways,
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          "http",
-									ContainerPort: deploymentInfo.Port,
-								},
-							},
-							Resources: corev1.ResourceRequirements{
-								Limits: corev1.ResourceList{
-									corev1.ResourceMemory: resource.MustParse(deploymentInfo.LimitResourceMemory),
-									corev1.ResourceCPU:    resource.MustParse(deploymentInfo.LimitResourceCPU),
-								},
-								Requests: corev1.ResourceList{
-									corev1.ResourceCPU:    resource.MustParse(deploymentInfo.RequestsResourceCPU),
-									corev1.ResourceMemory: resource.MustParse(deploymentInfo.RequestsResourceMemory),
-								},
-							},
-						},
-					},
-					ImagePullSecrets: []corev1.LocalObjectReference{
-						{
-							Name: deploymentInfo.ImagePullSecrets,
-						},
-					},
-				},
-			},
-		},
-	}
 	deploymentsClient := ClientSet.AppsV1().Deployments(deploymentInfo.Namespace)
-	result, err := deploymentsClient.Update(context.Background(), deploymentCreate, metav1.UpdateOptions{})
+	existingDeployment, err := deploymentsClient.Get(context.Background(), deploymentInfo.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	existingDeployment.Spec.Replicas = utils.Int32Ptr(deploymentInfo.Replicas)
+	existingDeployment.Spec.Template.Spec.Containers[0].Image = deploymentInfo.Image
+	existingDeployment.Spec.Template.Spec.Containers[0].Resources.Limits = corev1.ResourceList{
+		corev1.ResourceMemory: resource.MustParse(deploymentInfo.LimitResourceMemory),
+		corev1.ResourceCPU:    resource.MustParse(deploymentInfo.LimitResourceCPU),
+	}
+	existingDeployment.Spec.Template.Spec.Containers[0].Resources.Requests = corev1.ResourceList{
+		corev1.ResourceMemory: resource.MustParse(deploymentInfo.RequestsResourceMemory),
+		corev1.ResourceCPU:    resource.MustParse(deploymentInfo.RequestsResourceCPU),
+	}
+
+	result, err := deploymentsClient.Update(context.Background(), existingDeployment, metav1.UpdateOptions{})
 	if err != nil {
 		return nil, err
 	}
