@@ -293,7 +293,7 @@ func (s *ConfigmapService) deleteConfigmap(configmapInfo *ConfigmapInfo) (interf
 		logrus.Errorf("Error encoding ConfigMap to JSON: %v\n", err)
 		return nil, err
 	}
-
+	logrus.Infof("jsonData: %v", string(jsonData))
 	// 将 JSON 转换为 YAML
 	var yamlData []byte
 	yamlData, err = yaml.JSONToYAML(jsonData)
