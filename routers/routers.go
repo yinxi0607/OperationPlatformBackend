@@ -14,6 +14,7 @@ func InitRouters(router *gin.Engine) {
 	InitDeploymentRouter(router)
 	InitNamespacesRouter(router)
 	InitPodsRouter(router)
+	InitConfigmapRouter(router)
 	//initNodeRouter()
 	//initIngressRouter()
 }
