@@ -15,4 +15,12 @@ func InitHealthRouter(router *gin.Engine) {
 			Data:    "operation-platform is running",
 		})
 	})
+	router.GET("/", func(c *gin.Context) {
+
+		c.JSON(200, utils.Response{
+			Code:    utils.SuccessCode,
+			Message: utils.SuccessMessage,
+			Data:    "operation-platform is running",
+		})
+	})
 }
