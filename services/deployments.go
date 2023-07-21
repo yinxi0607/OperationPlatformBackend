@@ -89,10 +89,10 @@ func (s *DeploymentService) getPodsDetailByDeployment(namespace, deployment stri
 	var podNames []map[string]interface{}
 	for _, pod := range podList.Items {
 		podNames = append(podNames, map[string]interface{}{
-			"image":       pod.Spec.Containers[0].Image,
-			"status":      pod.Status.Phase,
-			"runningTime": pod.Status.StartTime,
-			"name":        pod.Name,
+			"image":        pod.Spec.Containers[0].Image,
+			"status":       pod.Status.Phase,
+			"running_time": pod.Status.StartTime,
+			"name":         pod.Name,
 		})
 	}
 
@@ -137,6 +137,28 @@ func (s *DeploymentService) getAllDeployment(namespace string) ([]string, error)
 	}
 
 	return deployments, nil
+}
+
+func (s *DeploymentService) GetAllNSDeployment(c *gin.Context) {
+	namespaceList, err := ClientSet.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		c.JSON(http.StatusOK, utils.Response{Code: utils.InternalErrorCode, Message: fmt.Sprintf("failed to list namespaces: %v", err), Data: nil})
+		return
+	}
+	allDeployments := make(map[string][]string)
+	for _, namespace := range namespaceList.Items {
+		deployments, err := s.getAllDeployment(namespace.Name)
+		if err != nil {
+			c.JSON(http.StatusOK, utils.Response{Code: utils.InternalErrorCode, Message: fmt.Sprintf("failed to get deployments in namespace %s: %v", namespace.Name, err), Data: nil})
+			return
+		}
+		allDeployments[namespace.Name] = deployments
+	}
+	c.JSON(http.StatusOK, utils.Response{
+		Code:    utils.SuccessCode,
+		Message: utils.SuccessMessage,
+		Data:    allDeployments,
+	})
 }
 
 func (s *DeploymentService) PostDeployment(c *gin.Context) {

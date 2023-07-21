@@ -8,6 +8,7 @@ import (
 func InitDeploymentRouter(router *gin.Engine) {
 	deploymentRouter := router.Group("/deployments")
 	deploymentRouter.GET("/:namespace", handlers.GetAllDeployment)
+	deploymentRouter.GET("/", handlers.GetAllNSDeployment)
 	deploymentRouter.GET("/:namespace/:deployment", handlers.GetDeploymentPods)
 	deploymentRouter.POST("/", handlers.PostDeployment)
 	deploymentRouter.PUT("/", handlers.PutDeployment)

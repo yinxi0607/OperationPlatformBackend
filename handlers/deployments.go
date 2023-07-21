@@ -15,6 +15,10 @@ func GetAllDeployment(c *gin.Context) {
 	deploymentServices.GetAllDeployment(c)
 }
 
+func GetAllNSDeployment(c *gin.Context) {
+	deploymentServices.GetAllNSDeployment(c)
+}
+
 func GetDeploymentPods(c *gin.Context) {
 	deploymentServices.GetDeploymentPods(c)
 }
