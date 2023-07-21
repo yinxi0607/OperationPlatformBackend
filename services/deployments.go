@@ -74,7 +74,7 @@ func (s *DeploymentService) GetDeploymentPods(c *gin.Context) {
 
 }
 
-func (s *DeploymentService) getPodsDetailByDeployment(namespace, deployment string) (map[string]interface{}, error) {
+func (s *DeploymentService) getPodsDetailByDeployment(namespace, deployment string) ([]map[string]interface{}, error) {
 	deploy, err := ClientSet.AppsV1().Deployments(namespace).Get(context.TODO(), deployment, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get deployment: %v", err)
@@ -86,13 +86,14 @@ func (s *DeploymentService) getPodsDetailByDeployment(namespace, deployment stri
 		return nil, fmt.Errorf("failed to list pods: %v", err)
 	}
 
-	podNames := make(map[string]interface{})
+	var podNames []map[string]interface{}
 	for _, pod := range podList.Items {
-		podNames[pod.Name] = map[string]interface{}{
+		podNames = append(podNames, map[string]interface{}{
 			"image":       pod.Spec.Containers[0].Image,
 			"status":      pod.Status.Phase,
 			"runningTime": pod.Status.StartTime,
-		}
+			"name":        pod.Name,
+		})
 	}
 
 	return podNames, nil
