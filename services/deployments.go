@@ -145,20 +145,42 @@ func (s *DeploymentService) GetAllNSDeployment(c *gin.Context) {
 		c.JSON(http.StatusOK, utils.Response{Code: utils.InternalErrorCode, Message: fmt.Sprintf("failed to list namespaces: %v", err), Data: nil})
 		return
 	}
-	allDeployments := make(map[string][]string)
+	var allDeployments []interface{}
 	for _, namespace := range namespaceList.Items {
-		deployments, err := s.getAllDeployment(namespace.Name)
-		if err != nil {
-			c.JSON(http.StatusOK, utils.Response{Code: utils.InternalErrorCode, Message: fmt.Sprintf("failed to get deployments in namespace %s: %v", namespace.Name, err), Data: nil})
-			return
+		if namespace.Name != "kube-system" {
+			deployments, err := s.getAllNSDeployment(namespace.Name)
+			if err != nil {
+				c.JSON(http.StatusOK, utils.Response{Code: utils.InternalErrorCode, Message: fmt.Sprintf("failed to get deployments in namespace %s: %v", namespace.Name, err), Data: nil})
+				return
+			}
+			allDeployments = append(allDeployments, deployments)
 		}
-		allDeployments[namespace.Name] = deployments
 	}
 	c.JSON(http.StatusOK, utils.Response{
 		Code:    utils.SuccessCode,
 		Message: utils.SuccessMessage,
 		Data:    allDeployments,
 	})
+}
+
+func (s *DeploymentService) getAllNSDeployment(namespace string) ([]map[string]interface{}, error) {
+	deploymentList, err := ClientSet.AppsV1().Deployments(namespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list deployments: %v", err)
+	}
+
+	var deployments []map[string]interface{}
+	for _, deployment := range deploymentList.Items {
+		deployments = append(deployments, map[string]interface{}{
+			"name":      deployment.Name,
+			"namespace": deployment.Namespace,
+			"image":     deployment.Spec.Template.Spec.Containers[0].Image,
+			"ready":     deployment.Status.ReadyReplicas,
+			"age":       deployment.CreationTimestamp,
+		})
+	}
+
+	return deployments, nil
 }
 
 func (s *DeploymentService) PostDeployment(c *gin.Context) {
