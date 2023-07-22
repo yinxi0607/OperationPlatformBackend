@@ -153,7 +153,12 @@ func (s *DeploymentService) GetAllNSDeployment(c *gin.Context) {
 				c.JSON(http.StatusOK, utils.Response{Code: utils.InternalErrorCode, Message: fmt.Sprintf("failed to get deployments in namespace %s: %v", namespace.Name, err), Data: nil})
 				return
 			}
-			allDeployments = append(allDeployments, deployments)
+			if len(deployments) != 0 {
+				for _, deployment := range deployments {
+					allDeployments = append(allDeployments, deployment)
+				}
+
+			}
 		}
 	}
 	c.JSON(http.StatusOK, utils.Response{
