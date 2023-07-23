@@ -19,10 +19,10 @@ type DeploymentInfo struct {
 	Image                  string `json:"image"`
 	Replicas               int32  `json:"replicas" default:"1"`
 	Port                   int32  `json:"port"`
-	LimitResourceMemory    string `json:"resourceMemory" default:"1Gi"`
-	LimitResourceCPU       string `json:"resourceCPU" default:"1000m"`
-	RequestsResourceMemory string `json:"requestsResourceMemory" default:"256Mi"`
-	RequestsResourceCPU    string `json:"requestsResourceCPU" default:"100m"`
+	LimitResourceMemory    string `json:"limit_resource_memory" default:"1Gi"`
+	LimitResourceCPU       string `json:"limit_resource_cpu" default:"1000m"`
+	RequestsResourceMemory string `json:"requests_resource_memory" default:"256Mi"`
+	RequestsResourceCPU    string `json:"requests_resource_cpu" default:"100m"`
 	ImagePullSecrets       string `json:"imagePullSecrets" default:"aliyun-registry"`
 }
 
@@ -97,6 +97,55 @@ func (s *DeploymentService) getPodsDetailByDeployment(namespace, deployment stri
 	}
 
 	return podNames, nil
+}
+
+func (s *DeploymentService) GetDeploymentInfo(c *gin.Context) {
+	namespace := c.Param("namespace")
+	deployment := c.Param("deployment")
+	if namespace == "" || deployment == "" {
+		c.JSON(http.StatusBadRequest, utils.Response{
+			Code:    utils.ParamsErrorCode,
+			Message: "namespace or deployment is empty",
+			Data:    nil,
+		})
+		return
+	}
+	deploymentInfo, err := s.getDeploymentInfo(namespace, deployment)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.Response{
+			Code:    utils.InternalErrorCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.Response{
+		Code:    utils.SuccessCode,
+		Message: utils.SuccessMessage,
+		Data:    deploymentInfo,
+	})
+}
+
+func (s *DeploymentService) getDeploymentInfo(namespace, deployment string) (*DeploymentInfo, error) {
+	deploy, err := ClientSet.AppsV1().Deployments(namespace).Get(context.TODO(), deployment, metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get deployment: %v", err)
+	}
+
+	deploymentInfo := NewDeploymentInfo()
+	deploymentInfo.Name = deploy.Name
+	deploymentInfo.Namespace = deploy.Namespace
+	deploymentInfo.Image = deploy.Spec.Template.Spec.Containers[0].Image
+	deploymentInfo.Replicas = *deploy.Spec.Replicas
+	deploymentInfo.Port = deploy.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort
+	deploymentInfo.LimitResourceMemory = deploy.Spec.Template.Spec.Containers[0].Resources.Limits.Memory().String()
+	deploymentInfo.LimitResourceCPU = deploy.Spec.Template.Spec.Containers[0].Resources.Limits.Cpu().String()
+	deploymentInfo.RequestsResourceMemory = deploy.Spec.Template.Spec.Containers[0].Resources.Requests.Memory().String()
+	deploymentInfo.RequestsResourceCPU = deploy.Spec.Template.Spec.Containers[0].Resources.Requests.Cpu().String()
+	deploymentInfo.ImagePullSecrets = deploy.Spec.Template.Spec.ImagePullSecrets[0].Name
+
+	return deploymentInfo, nil
 }
 
 func (s *DeploymentService) GetAllDeployment(c *gin.Context) {
@@ -177,11 +226,11 @@ func (s *DeploymentService) getAllNSDeployment(namespace string) ([]map[string]i
 	var deployments []map[string]interface{}
 	for _, deployment := range deploymentList.Items {
 		deployments = append(deployments, map[string]interface{}{
-			"name":      deployment.Name,
-			"namespace": deployment.Namespace,
-			"image":     deployment.Spec.Template.Spec.Containers[0].Image,
-			"ready":     deployment.Status.ReadyReplicas,
-			"age":       deployment.CreationTimestamp,
+			"name":               deployment.Name,
+			"namespace":          deployment.Namespace,
+			"image":              deployment.Spec.Template.Spec.Containers[0].Image,
+			"ready":              deployment.Status.ReadyReplicas,
+			"creation_timestamp": deployment.CreationTimestamp,
 		})
 	}
 

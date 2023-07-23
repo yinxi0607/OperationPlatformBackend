@@ -22,6 +22,9 @@ func GetAllNSDeployment(c *gin.Context) {
 func GetDeploymentPods(c *gin.Context) {
 	deploymentServices.GetDeploymentPods(c)
 }
+func GetDeploymentInfo(c *gin.Context) {
+	deploymentServices.GetDeploymentInfo(c)
+}
 
 func PostDeployment(c *gin.Context) {
 	deploymentServices.PostDeployment(c)
