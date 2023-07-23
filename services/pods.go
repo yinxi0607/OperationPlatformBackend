@@ -66,15 +66,58 @@ func (s *PodsService) GetAllPods(c *gin.Context) {
 	})
 }
 
-func (s *PodsService) getAllPods(namespace string) ([]string, error) {
+func (s *PodsService) GetAllNSPods(c *gin.Context) {
+	//namespace := c.Param("namespace")
+	namespaceList, err := ClientSet.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.Response{
+			Code:    utils.InternalErrorCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+		return
+	}
+	pods := make([]map[string]interface{}, 0)
+	for _, namespace := range namespaceList.Items {
+		podList, err := s.getAllPods(namespace.Name)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, utils.Response{
+				Code:    utils.InternalErrorCode,
+				Message: err.Error(),
+				Data:    nil,
+			})
+			return
+		}
+		for _, pod := range podList {
+			pods = append(pods, pod)
+		}
+
+	}
+	c.JSON(http.StatusOK, utils.Response{
+		Code:    utils.SuccessCode,
+		Message: utils.SuccessMessage,
+		Data:    pods,
+	})
+}
+
+func (s *PodsService) getAllPods(namespace string) ([]map[string]interface{}, error) {
 	podList, err := ClientSet.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list pods: %v", err)
 	}
 
-	var pods []string
+	var pods []map[string]interface{}
 	for _, pod := range podList.Items {
-		pods = append(pods, pod.Name)
+		pods = append(pods, map[string]interface{}{
+			"name":      pod.Name,
+			"namespace": pod.Namespace,
+			"status":    pod.Status.Phase,
+			"ip":        pod.Status.PodIP,
+			"Ready":     pod.Status.ContainerStatuses[0].Ready,
+			"Restarts":  pod.Status.ContainerStatuses[0].RestartCount,
+			"image":     pod.Spec.Containers[0].Image,
+			"run_time":  pod.Status.StartTime,
+		})
 	}
 
 	return pods, nil

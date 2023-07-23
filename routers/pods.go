@@ -9,4 +9,5 @@ func InitPodsRouter(router *gin.Engine) {
 	podsRouter := router.Group("/pods")
 	podsRouter.GET("/:namespace/:pod", handlers.GetPodInfo)
 	podsRouter.GET("/:namespace", handlers.GetAllPods)
+	podsRouter.GET("/", handlers.GetAllNSPods)
 }
