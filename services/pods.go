@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"operation-platform/utils"
@@ -149,7 +150,7 @@ func (s *PodsService) getPodLogs(namespace, podName string) (string, error) {
 	//	Container: "nginx",
 	//	Follow:    true,
 	//}
-	req := ClientSet.CoreV1().Pods(namespace).GetLogs(podName, nil)
+	req := ClientSet.CoreV1().Pods(namespace).GetLogs(podName, &corev1.PodLogOptions{})
 	podLogs, err := req.Stream(context.Background())
 	if err != nil {
 		return "", fmt.Errorf("error in opening stream: %v", err)
