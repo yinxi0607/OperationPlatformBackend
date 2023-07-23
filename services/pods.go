@@ -1,9 +1,11 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"io"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"operation-platform/utils"
@@ -109,16 +111,56 @@ func (s *PodsService) getAllPods(namespace string) ([]map[string]interface{}, er
 	var pods []map[string]interface{}
 	for _, pod := range podList.Items {
 		pods = append(pods, map[string]interface{}{
-			"name":      pod.Name,
-			"namespace": pod.Namespace,
-			"status":    pod.Status.Phase,
-			"ip":        pod.Status.PodIP,
-			"Ready":     pod.Status.ContainerStatuses[0].Ready,
-			"Restarts":  pod.Status.ContainerStatuses[0].RestartCount,
-			"image":     pod.Spec.Containers[0].Image,
-			"run_time":  pod.Status.StartTime,
+			"name":               pod.Name,
+			"namespace":          pod.Namespace,
+			"status":             pod.Status.Phase,
+			"ip":                 pod.Status.PodIP,
+			"ready":              pod.Status.ContainerStatuses[0].Ready,
+			"restarts":           pod.Status.ContainerStatuses[0].RestartCount,
+			"image":              pod.Spec.Containers[0].Image,
+			"creation_timestamp": pod.CreationTimestamp,
 		})
 	}
 
 	return pods, nil
+}
+
+func (s *PodsService) GetPodLogs(c *gin.Context) {
+	podName := c.Param("pod")
+	namespace := c.Param("namespace")
+	log, err := s.getPodLogs(namespace, podName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.Response{
+			Code:    utils.InternalErrorCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, utils.Response{
+		Code:    utils.SuccessCode,
+		Message: utils.SuccessMessage,
+		Data:    log,
+	})
+}
+
+func (s *PodsService) getPodLogs(namespace, podName string) (string, error) {
+	//logOptions := &corev1.PodLogOptions{
+	//	Container: "nginx",
+	//	Follow:    true,
+	//}
+	req := ClientSet.CoreV1().Pods(namespace).GetLogs(podName, nil)
+	podLogs, err := req.Stream(context.Background())
+	if err != nil {
+		return "", fmt.Errorf("error in opening stream: %v", err)
+	}
+	defer podLogs.Close()
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, podLogs)
+	if err != nil {
+		return "", fmt.Errorf("error in copy information from podLogs to buf: %v", err)
+	}
+	str := buf.String()
+	return str, nil
 }

@@ -22,3 +22,7 @@ func GetAllPods(c *gin.Context) {
 func GetAllNSPods(c *gin.Context) {
 	podsServices.GetAllNSPods(c)
 }
+
+func GetPodLogs(c *gin.Context) {
+	podsServices.GetPodLogs(c)
+}
