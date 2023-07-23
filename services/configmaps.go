@@ -59,6 +59,57 @@ func (s *ConfigmapService) getAllConfigmaps(namespace string) ([]string, error) 
 	return configmaps, nil
 }
 
+func (s *ConfigmapService) GetAllNSConfigmaps(c *gin.Context) {
+	namespace, err := ClientSet.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.Response{
+			Code:    utils.InternalErrorCode,
+			Message: err.Error(),
+			Data:    nil,
+		})
+		return
+	}
+	configmaps := make([]map[string]interface{}, 0)
+	for _, ns := range namespace.Items {
+		configmapList, err := s.getAllNSConfigmaps(ns.Name)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, utils.Response{
+				Code:    utils.InternalErrorCode,
+				Message: err.Error(),
+				Data:    nil,
+			})
+			return
+		}
+		for _, configmap := range configmapList {
+			configmaps = append(configmaps, configmap)
+		}
+	}
+	c.JSON(http.StatusOK, utils.Response{
+		Code:    utils.SuccessCode,
+		Message: utils.SuccessMessage,
+		Data:    configmaps,
+	})
+}
+
+func (s *ConfigmapService) getAllNSConfigmaps(namespace string) ([]map[string]interface{}, error) {
+	configmapList, err := ClientSet.CoreV1().ConfigMaps(namespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list configmaps: %v", err)
+	}
+
+	var configmaps []map[string]interface{}
+	for _, configmap := range configmapList.Items {
+		configmaps = append(configmaps, map[string]interface{}{
+			"name":               configmap.Name,
+			"namespace":          configmap.Namespace,
+			"data":               configmap.Data,
+			"creation_timestamp": configmap.CreationTimestamp,
+		})
+	}
+
+	return configmaps, nil
+}
+
 func (s *ConfigmapService) GetConfigmap(c *gin.Context) {
 	namespace := c.Param("namespace")
 	configmapName := c.Param("configmapName")

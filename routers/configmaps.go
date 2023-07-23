@@ -7,6 +7,7 @@ import (
 
 func InitConfigmapRouter(router *gin.Engine) {
 	configmapRouter := router.Group("/configmaps")
+	configmapRouter.GET("/", handlers.GetAllNSConfigmaps)
 	configmapRouter.GET("/:namespace", handlers.GetAllConfigmaps)
 	configmapRouter.POST("/", handlers.PostConfigmap)
 	configmapRouter.PUT("/", handlers.PutConfigmap)

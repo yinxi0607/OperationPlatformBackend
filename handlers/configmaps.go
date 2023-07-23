@@ -15,6 +15,10 @@ func GetAllConfigmaps(c *gin.Context) {
 	configmapServices.GetAllConfigmaps(c)
 }
 
+func GetAllNSConfigmaps(c *gin.Context) {
+	configmapServices.GetAllNSConfigmaps(c)
+}
+
 func GetConfigmap(c *gin.Context) {
 	configmapServices.GetConfigmap(c)
 }
