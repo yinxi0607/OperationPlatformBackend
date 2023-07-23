@@ -10,7 +10,7 @@ func InitDeploymentRouter(router *gin.Engine) {
 	deploymentRouter.GET("/:namespace", handlers.GetAllDeployment)
 	deploymentRouter.GET("/", handlers.GetAllNSDeployment)
 	deploymentRouter.GET("/:namespace/:deployment/pods", handlers.GetDeploymentPods)
-	deploymentRouter.GET("/:namespace/:deployment/info", handlers.GetDeploymentPods)
+	deploymentRouter.GET("/:namespace/:deployment/info", handlers.GetDeploymentInfo)
 	deploymentRouter.POST("/", handlers.PostDeployment)
 	deploymentRouter.PUT("/", handlers.PutDeployment)
 	deploymentRouter.DELETE("/", handlers.DeleteDeployment)
