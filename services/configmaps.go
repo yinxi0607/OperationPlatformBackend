@@ -358,11 +358,11 @@ func (s *ConfigmapService) deleteConfigmap(configmapInfo *ConfigmapInfo) (interf
 		return nil, err
 	}
 	logrus.Infof("yamlData: %v", string(yamlData))
-	err = utils.AzureStorage(fmt.Sprintf("%s/%s/%s", configmapInfo.Namespace, "configmaps", configmapInfo.Name), yamlData)
-	if err != nil {
-		logrus.Error("configmap AzureStorage error: ", err)
-		return nil, err
-	}
+	//err = utils.AzureStorage(fmt.Sprintf("%s/%s/%s", configmapInfo.Namespace, "configmaps", configmapInfo.Name), yamlData)
+	//if err != nil {
+	//	logrus.Error("configmap AzureStorage error: ", err)
+	//	return nil, err
+	//}
 	err = configmapsClient.Delete(context.Background(), configmapInfo.Name, metav1.DeleteOptions{})
 	if err != nil {
 		return nil, err

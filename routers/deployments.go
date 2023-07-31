@@ -5,7 +5,7 @@ import (
 	"operation-platform/handlers"
 )
 
-func InitDeploymentRouter(router *gin.Engine) {
+func InitDeploymentRouter(router *gin.RouterGroup) {
 	deploymentRouter := router.Group("/deployments")
 	deploymentRouter.GET("/:namespace", handlers.GetAllDeployment)
 	deploymentRouter.GET("/", handlers.GetAllNSDeployment)

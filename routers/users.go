@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func InitUsersRouter(router *gin.Engine) {
+func InitUsersRouter(router *gin.RouterGroup) {
 	usersRouter := router.Group("/users")
 	usersRouter.GET("/login", handlers.GetUserLogin)
 	usersRouter.GET("/callback", handlers.GetUserLoginCallback)

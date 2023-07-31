@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: operation-platform-deployment
+  namespace: nhb
+spec:
+  replicas: 1   # 根据需要进行调整
+  selector:
+    matchLabels:
+      app: operation-platform
+  template:
+    metadata:
+      labels:
+        app: operation-platform
+    spec:
+      containers:
+        - name: operation-platform-container
+          image: registry.cn-hangzhou.aliyuncs.com/nhb/operation_platform_backend:latest
+          ports:
+            - containerPort: 58180
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: operation-platform-configmap
+      imagePullSecrets:
+        - name: aliyun-registry-secret
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: operation-platform-service
+  namespace: nhb
+spec:
+  selector:
+    app: operation-platform
+  ports:
+    - protocol: TCP
+      port: 58180
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: operation-platform-ingress
+  namespace: nhb
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($request_method = 'OPTIONS') {
+        return 204;
+      }
+spec:
+  tls:
+    - hosts:
+        - nhb.ink
+      secretName: nhb-ink-tls
+      ingress.kubernetes.io/force-ssl-redirect: "true"
+  rules:
+    - host: operation.nhb.ink
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: operation-platform-service
+                port:
+                  number: 58180

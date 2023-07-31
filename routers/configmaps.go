@@ -5,7 +5,7 @@ import (
 	"operation-platform/handlers"
 )
 
-func InitConfigmapRouter(router *gin.Engine) {
+func InitConfigmapRouter(router *gin.RouterGroup) {
 	configmapRouter := router.Group("/configmaps")
 	configmapRouter.GET("/", handlers.GetAllNSConfigmaps)
 	configmapRouter.GET("/:namespace", handlers.GetAllConfigmaps)

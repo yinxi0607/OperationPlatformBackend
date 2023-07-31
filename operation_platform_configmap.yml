@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: operation-platform-configmap
+  namespace: nhb
+data:
+  AZURE_STORAGE_ACCOUNT: "value1"
+  AZURE_STORAGE_ACCESS_KEY: "value2"
+  AZURE_STORAGE_CONTAINER: "value3"
+

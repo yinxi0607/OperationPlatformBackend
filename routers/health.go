@@ -5,7 +5,7 @@ import (
 	"operation-platform/utils"
 )
 
-func InitHealthRouter(router *gin.Engine) {
+func InitHealthRouter(router *gin.RouterGroup) {
 
 	router.GET("/health", func(c *gin.Context) {
 

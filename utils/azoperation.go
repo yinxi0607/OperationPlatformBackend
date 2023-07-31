@@ -13,7 +13,7 @@ var (
 	azureBlobContainerURL azblob.ContainerURL
 )
 
-func init() {
+func init1() {
 
 	accountName := GetEvnValue("AZURE_STORAGE_ACCOUNT", "your_account_name")
 	accountKey := GetEvnValue("AZURE_STORAGE_ACCESS_KEY", "your_account_key")

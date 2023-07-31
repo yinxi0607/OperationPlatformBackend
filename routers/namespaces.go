@@ -5,7 +5,7 @@ import (
 	"operation-platform/handlers"
 )
 
-func InitNamespacesRouter(router *gin.Engine) {
+func InitNamespacesRouter(router *gin.RouterGroup) {
 	namespacesRouter := router.Group("/namespaces")
 	namespacesRouter.GET("/", handlers.GetAllNamespaces)
 }

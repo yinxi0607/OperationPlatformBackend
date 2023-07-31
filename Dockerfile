@@ -14,13 +14,13 @@ RUN go mod download
 COPY . .
 
 # 构建可执行文件
-RUN CGO_ENABLED=0 GOOS=linux go build -o main .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main .
 
 # 使用官方的Alpine基础镜像作为运行环境
 FROM alpine:latest
-
+RUN #apk update && apk add --no-cache tzdata
 # 在Alpine中安装ca-certificates以支持HTTPS
-RUN apk --no-cache add ca-certificates
+RUN #apk --no-cache add ca-certificates
 
 # 将可执行文件从构建环境复制到运行环境
 COPY --from=builder /app/main /app/main

@@ -5,7 +5,7 @@ import (
 	"operation-platform/handlers"
 )
 
-func InitPodsRouter(router *gin.Engine) {
+func InitPodsRouter(router *gin.RouterGroup) {
 	podsRouter := router.Group("/pods")
 	podsRouter.GET("/:namespace/:pod/logs", handlers.GetPodLogs)
 	podsRouter.GET("/:namespace/:pod", handlers.GetPodInfo)

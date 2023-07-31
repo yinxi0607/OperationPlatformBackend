@@ -1,0 +1,13 @@
+version: '3'
+services:
+  operation_platform_backend:
+    image: registry.cn-hangzhou.aliyuncs.com/nhb/operation_platform_backend:latest
+    ports:
+      - 58180:58180
+    volumes:
+      - /root/.kube:/.kube
+    environment:
+      - AZURE_STORAGE_ACCOUNT=sss
+      - AZURE_STORAGE_ACCESS_KEY=sss
+      - AZURE_STORAGE_CONTAINER=sss
+      - K8SConfig=/.kube/config
